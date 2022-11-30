@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+#additionals
+.DS_Store
+GauldinCsts
