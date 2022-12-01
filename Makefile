@@ -8,4 +8,4 @@ macOS:
 	./Main
 
 clean:
-	rm -f *.o
+	rm -f *.o Main
