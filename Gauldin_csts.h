@@ -3,6 +3,8 @@
 
 #include <gecode/int.hh>
 #include <gecode/search.hh>
+#include <gecode/minimodel.hh>
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -25,6 +27,11 @@ protected:
     IntVarArray bass;    // The array of variable representing the bass voice (lowest pitch voice)
     int n;               // The number of events TODO change this to a harmonic rhythm
 
+    //TODO determine how to represent the structure of chords (boolvar, intvar,...)
+    BoolVarArray isCloseStructure;
+    BoolVarArray isOpenStructure;
+    BoolVarArray isNeutralStructure;
+
 public:
     /**
      * @brief Create an instance of the problem (at the moment, doesn't take any arguments but will in the future -> TODO)
@@ -35,9 +42,20 @@ public:
     /**
      * @brief Posts the constraint that soprano[i] >= alto[i] >= tenor[i] >= bass[i] for all i
      *
-     * @param n the length of the IntVarArrays      TODO change to a harmonic rhythm
      */
-    void voices_order(int n);
+    void voices_order();
+
+    /**
+     * @brief Posts the constraint that isCloseStructure is true if the chord formed by the 4 voices is in close structure, false if it is not.
+     * A chord is in close structure if the interval between the soprano voice and the tenor voice is smaller than an octave.
+     *
+     * @param soprano The highest voice in the chord
+     * @param alto The second highest voice in the chord
+     * @param tenor The third highest voice in the chord
+     * @param bass The fourth highest voice in the chord
+     * @param isCloseStructure A boolean variable that is set to true if the chord is in close structure
+     */
+    void close_structure();
 
     /**
      * @brief This method is called when a Branch and Bound solver is used everytime a solution is found by the solver.
@@ -74,5 +92,7 @@ public:
      *
      */
     void print(void) const;
+
+    void testReified(BoolVarArray array, bool value);;
 };
 #endif

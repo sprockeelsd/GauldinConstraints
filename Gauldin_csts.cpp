@@ -12,15 +12,24 @@ using namespace std;
  ***************************************************************************************************************************************/
 
 /**
+ * @brief REMARKs
+ * Idk how to print the reified variables when they are assigned, so i created a test function that assigns it to true or false to check if it works
+ *
+ */
+
+/**
  * @brief Create an instance of the problem (at the moment, doesn't take any arguments but will in the future -> TODO)
  *
  */
-Gauldin_csts::Gauldin_csts() : soprano(*this, 1, 1, 4), alto(*this, 1, 1, 4), tenor(*this, 1, 1, 4), bass(*this, 1, 1, 4)
+Gauldin_csts::Gauldin_csts() : n(1), soprano(*this, 1, 1, 4), alto(*this, 1, 1, 4), tenor(*this, 1, 1, 4), bass(*this, 1, 1, 4),
+                               isCloseStructure(*this, 1, 0, 1)
 {
     Rnd r1(12U); // random number generator
 
     // Constraints posting
-    voices_order(1);
+    voices_order();
+
+    close_structure();
 
     // branching   TODO change
     branch(*this, soprano, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
@@ -34,13 +43,27 @@ Gauldin_csts::Gauldin_csts() : soprano(*this, 1, 1, 4), alto(*this, 1, 1, 4), te
  *
  * @param n the length of the IntVarArrays      TODO change to a harmonic rhythm
  */
-void Gauldin_csts::voices_order(int n)
+void Gauldin_csts::voices_order()
 {
     for (int i = 0; i < n; ++i)
     {
         rel(*this, soprano[i], IRT_GQ, alto[i]); // soprano[i] >= alto[i]
         rel(*this, alto[i], IRT_GQ, tenor[i]);   // alto[i] >= tenor[i]
         rel(*this, tenor[i], IRT_GQ, bass[i]);   // tenor[i] >= bass[i]
+    }
+}
+
+/**
+ * @brief Posts the constraint that isCloseStructure is true if the chord formed by the 4 voices is in close structure, false if it is not.
+ * A chord is in close structure if the interval between the soprano voice and the tenor voice is smaller than an octave.
+ */
+void Gauldin_csts::close_structure()
+{
+    IntVarArgs diff(n); // Temporary variable for the difference
+    for (int i = 0; i < n; ++i)
+    {
+        diff[i] = expr(*this, soprano[i] - tenor[i]);              // diff = soprano - tenor
+        rel(*this, diff[i], IRT_LE, 12, eqv(isCloseStructure[i])); // posts the reified constraint diff < 12 <=> isClosedStructure == 1
     }
 }
 
@@ -61,5 +84,23 @@ void Gauldin_csts::constrain(const Space &_b)
  */
 void Gauldin_csts::print(void) const
 {
-    std::cout << "soprano :" << soprano << "alto :" << alto << "tenor :" << tenor << "bass :" << bass << std::endl;
+    std::cout << "soprano :" << soprano << std::endl
+              << "alto    :" << alto << std::endl
+              << "tenor   :" << tenor << std::endl
+              << "bass    :" << bass << std::endl
+              << std::endl;
+}
+
+/**
+ * @brief This method assigns a value to the array of boolean variables used for reification to force a given behaviour so we can check if it works or not
+ * 
+ * @param array ABoolVarArray of variables used for reification
+ * @param value a boolean value that we want to force so we can check the behaviour
+ */
+void Gauldin_csts::testReified(BoolVarArray array, bool value)
+{
+    for (int i = 0; i < n; ++i)
+    {
+        rel(*this, array[i], IRT_EQ, value);
+    }
 }
