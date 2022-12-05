@@ -4,20 +4,10 @@
 using namespace Gecode;
 using namespace std;
 
-/***************************************************************************************************************************************
- *                                                                                                                                     *
- * @brief This class models tonal music as described by Gauldin in his book "Harmonic practice in tonal music", second edition.        *
- * It aims to create four-voice texture chord progressions based on the name of chords. TODO add rhythmic aspect to it                 *
- *                                                                                                                                     *
- ***************************************************************************************************************************************/
-
 /**
  * @brief TODO :
- * Generalize the constructor so everything depends on n
  * Take Arguments from command line
- * Generalize the diff Array (maybe an IntVar Array?) in the structure constraints
  * Change n so it works with harmonic rhythm
- * Exclusive constraint between open/closed/neutral structure (maybe not necessary, I need to think about it)
  * Constraints generating major/minor/diminished/7th chords from a note puis ajouter les inversions
  */
 
@@ -27,8 +17,15 @@ using namespace std;
  *
  */
 
+/********************************************************************************************************************************************
+ *                                                                                                                                          *
+ *      @brief This class models tonal music as described by Gauldin in his book "Harmonic practice in tonal music", second edition.        *
+ *      It aims to create four-voice texture chord progressions based on the name of chords. TODO add rhythmic aspect to it                 *
+ *                                                                                                                                          *
+ ********************************************************************************************************************************************/
+
 /**
- * @brief Construct a new Gauldin_csts::Gauldin_csts object
+ * @brief Construct a new Gauldin_csts object
  *
  * @param size the size of the arrays
  * @param lowest_note the lowest bound for the domain
@@ -36,7 +33,7 @@ using namespace std;
  */
 Gauldin_csts::Gauldin_csts(int size, int lowest_note, int highest_note)
 {
-    // Initialisation
+    // ------------------- Initialisation --------------------------
     n = size;
 
     soprano = IntVarArray(*this, n, lowest_note, highest_note);
@@ -46,23 +43,28 @@ Gauldin_csts::Gauldin_csts(int size, int lowest_note, int highest_note)
 
     isCloseStructure = BoolVarArray(*this, n, false, true);
     isOpenStructure = BoolVarArray(*this, n, false, true);
+    isNeutralStructure = BoolVarArray(*this, n, false, true);
 
     diffSopranoTenor = IntVarArgs(n);
-    for(int i = 0; i < n; ++i){
+    for (int i = 0; i < n; ++i) // Initialize the array (it is shared with all constraints on chord structure)
+    {
         diffSopranoTenor[i] = expr(*this, soprano[i] - tenor[i]);
-    }
-
+    } // This also ensures that only one of the 3 is true at any given time
 
     Rnd r1(12U); // random number generator
 
-    // Constraints posting
+    // ---------------- Constraints posting ----------------------
+
+    // soprano[i] >= alto[i] >= tenor[i] >= bass[i] for all i
     voices_order();
 
+    // Keeps track of the structure of each chord in the corresponding boolean constraints
     close_structure();
-
     open_structure();
+    neutral_structure();
 
-    // branching   TODO change
+    // --------------------- Branching -----------------------------   TODO change
+
     branch(*this, soprano, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
     branch(*this, alto, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
     branch(*this, tenor, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
@@ -89,21 +91,29 @@ void Gauldin_csts::voices_order()
  */
 void Gauldin_csts::close_structure()
 {
-    //IntVarArgs diffSopranoTenor(n);
     for (int i = 0; i < n; ++i)
     {
-        //diffSopranoTenor[i] = expr(*this, soprano[i] - tenor[i]);
         rel(*this, diffSopranoTenor[i], IRT_LE, 12, eqv(isCloseStructure[i])); // posts the reified constraint diff < 12 <=> isClosedStructure == 1
     }
 }
 
+/**
+ * @brief Posts the constraint that isOpenStructure is true if the chord formed by the 4 voices is in open structure, false if it is not.
+ * A chord is in open structure if the interval between the soprano voice and the tenor voice is bigger than an octave.
+ */
 void Gauldin_csts::open_structure()
 {
-    //IntVarArgs diffSopranoTenor(n);
     for (int i = 0; i < n; ++i)
     {
-        //diffSopranoTenor[i] = expr(*this, soprano[i] - tenor[i]);
         rel(*this, diffSopranoTenor[i], IRT_GR, 12, eqv(isOpenStructure[i])); // posts the reified constraint diff > 12 <=> isOpenStructure == 1
+    }
+}
+
+void Gauldin_csts::neutral_structure()
+{
+    for (int i = 0; i < n; ++i)
+    {
+        rel(*this, diffSopranoTenor[i], IRT_EQ, 12, eqv(isNeutralStructure[i])); // posts the reified constraint diff > 12 <=> isOpenStructure == 1
     }
 }
 

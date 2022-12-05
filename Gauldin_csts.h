@@ -3,7 +3,7 @@
 
 #include <gecode/int.hh>
 #include <gecode/search.hh>
-#include <gecode/minimodel.hh>
+#include <gecode/minimodel.hh> // for mathematical expressions between variables
 
 #include <iostream>
 #include <vector>
@@ -30,7 +30,6 @@ protected:
     IntVarArray bass;    // The array of variable representing the bass voice (lowest pitch voice)
 
     // BOOLEAN VARIABLES FOR REIFIED CONSTRAINTS
-    // TODO determine how to represent the structure of chords (boolvar, intvar,...)
     BoolVarArray isCloseStructure;
     BoolVarArray isOpenStructure;
     BoolVarArray isNeutralStructure;
@@ -57,17 +56,19 @@ public:
     /**
      * @brief Posts the constraint that isCloseStructure is true if the chord formed by the 4 voices is in close structure, false if it is not.
      * A chord is in close structure if the interval between the soprano voice and the tenor voice is smaller than an octave.
-     *
-     * @param soprano The highest voice in the chord
-     * @param alto The second highest voice in the chord
-     * @param tenor The third highest voice in the chord
-     * @param bass The fourth highest voice in the chord
-     * @param isCloseStructure A boolean variable that is set to true if the chord is in close structure
      */
     void close_structure();
 
+    /**
+     * @brief Posts the constraint that isOpenStructure is true if the chord formed by the 4 voices is in open structure, false if it is not.
+     * A chord is in open structure if the interval between the soprano voice and the tenor voice is bigger than an octave.
+     */
     void open_structure();
 
+    /**
+     * @brief Posts the constraint that isNeutralStructure is true if the chord formed by the 4 voices is in neutral structure, false if it is not.
+     * A chord is in neutral structure if the interval between the soprano voice and the tenor voice is equal to an octave.
+     */
     void neutral_structure();
 
     /**
