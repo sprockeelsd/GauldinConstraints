@@ -21,21 +21,30 @@ using namespace Gecode;
 class Gauldin_csts : public Space
 {
 protected:
+    int n; // The number of events TODO change this to a harmonic rhythm
+
+    // MAIN VARIABLES, THE ONES WE NEED TO BRANCH ON, THEY REPRESENT THE PROBLEM
     IntVarArray soprano; // The array of variable representing the soprano voice (highest pitch voice)
     IntVarArray alto;    // The array of variable representing the alto voice (second highest pitch voice)
     IntVarArray tenor;   // The array of variable representing the tenor voice (third highest pitch voice)
     IntVarArray bass;    // The array of variable representing the bass voice (lowest pitch voice)
-    int n;               // The number of events TODO change this to a harmonic rhythm
 
+    // BOOLEAN VARIABLES FOR REIFIED CONSTRAINTS
     // TODO determine how to represent the structure of chords (boolvar, intvar,...)
     BoolVarArray isCloseStructure;
     BoolVarArray isOpenStructure;
     BoolVarArray isNeutralStructure;
 
+    // ARGUMENT VARIABLES, WE DON'T NEED TO BRANCH ON THEM
+    IntVarArgs diffSopranoTenor; // variable to store soprano - tenor
+
 public:
     /**
-     * @brief Create an instance of the problem (at the moment, doesn't take any arguments but will in the future -> TODO)
+     * @brief Construct a new Gauldin_csts object
      *
+     * @param size the size of the arrays
+     * @param lowest_note the lowest bound for the domain
+     * @param highest_note the highest bound for the domain
      */
     Gauldin_csts(int size, int lowest_note, int highest_note);
 

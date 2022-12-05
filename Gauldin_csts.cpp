@@ -17,6 +17,8 @@ using namespace std;
  * Take Arguments from command line
  * Generalize the diff Array (maybe an IntVar Array?) in the structure constraints
  * Change n so it works with harmonic rhythm
+ * Exclusive constraint between open/closed/neutral structure (maybe not necessary, I need to think about it)
+ * Constraints generating major/minor/diminished/7th chords from a note puis ajouter les inversions
  */
 
 /**
@@ -26,8 +28,11 @@ using namespace std;
  */
 
 /**
- * @brief Create an instance of the problem
+ * @brief Construct a new Gauldin_csts::Gauldin_csts object
  *
+ * @param size the size of the arrays
+ * @param lowest_note the lowest bound for the domain
+ * @param highest_note the highest bound for the domain
  */
 Gauldin_csts::Gauldin_csts(int size, int lowest_note, int highest_note)
 {
@@ -40,6 +45,13 @@ Gauldin_csts::Gauldin_csts(int size, int lowest_note, int highest_note)
     bass = IntVarArray(*this, n, lowest_note, highest_note);
 
     isCloseStructure = BoolVarArray(*this, n, false, true);
+    isOpenStructure = BoolVarArray(*this, n, false, true);
+
+    diffSopranoTenor = IntVarArgs(n);
+    for(int i = 0; i < n; ++i){
+        diffSopranoTenor[i] = expr(*this, soprano[i] - tenor[i]);
+    }
+
 
     Rnd r1(12U); // random number generator
 
@@ -47,6 +59,8 @@ Gauldin_csts::Gauldin_csts(int size, int lowest_note, int highest_note)
     voices_order();
 
     close_structure();
+
+    open_structure();
 
     // branching   TODO change
     branch(*this, soprano, INT_VAR_SIZE_MIN(), INT_VAL_MIN());
@@ -75,17 +89,22 @@ void Gauldin_csts::voices_order()
  */
 void Gauldin_csts::close_structure()
 {
-    IntVarArgs diff(n); // Temporary variable for the difference
+    //IntVarArgs diffSopranoTenor(n);
     for (int i = 0; i < n; ++i)
     {
-        diff[i] = expr(*this, soprano[i] - tenor[i]);              // diff = soprano - tenor
-        rel(*this, diff[i], IRT_LE, 12, eqv(isCloseStructure[i])); // posts the reified constraint diff < 12 <=> isClosedStructure == 1
+        //diffSopranoTenor[i] = expr(*this, soprano[i] - tenor[i]);
+        rel(*this, diffSopranoTenor[i], IRT_LE, 12, eqv(isCloseStructure[i])); // posts the reified constraint diff < 12 <=> isClosedStructure == 1
     }
 }
 
 void Gauldin_csts::open_structure()
 {
-    IntVarArgs diff(n);
+    //IntVarArgs diffSopranoTenor(n);
+    for (int i = 0; i < n; ++i)
+    {
+        //diffSopranoTenor[i] = expr(*this, soprano[i] - tenor[i]);
+        rel(*this, diffSopranoTenor[i], IRT_GR, 12, eqv(isOpenStructure[i])); // posts the reified constraint diff > 12 <=> isOpenStructure == 1
+    }
 }
 
 /**
@@ -114,6 +133,7 @@ void Gauldin_csts::print(void) const
 
 /**
  * @brief This method assigns a value to the array of boolean variables used for reification to force a given behaviour so we can check if it works or not
+ * Calling this function will force all elements of array to have value value
  *
  * @param array ABoolVarArray of variables used for reification
  * @param value a boolean value that we want to force so we can check the behaviour
