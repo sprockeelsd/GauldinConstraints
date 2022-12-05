@@ -27,7 +27,7 @@ protected:
     IntVarArray bass;    // The array of variable representing the bass voice (lowest pitch voice)
     int n;               // The number of events TODO change this to a harmonic rhythm
 
-    //TODO determine how to represent the structure of chords (boolvar, intvar,...)
+    // TODO determine how to represent the structure of chords (boolvar, intvar,...)
     BoolVarArray isCloseStructure;
     BoolVarArray isOpenStructure;
     BoolVarArray isNeutralStructure;
@@ -37,7 +37,7 @@ public:
      * @brief Create an instance of the problem (at the moment, doesn't take any arguments but will in the future -> TODO)
      *
      */
-    Gauldin_csts();
+    Gauldin_csts(int size, int lowest_note, int highest_note);
 
     /**
      * @brief Posts the constraint that soprano[i] >= alto[i] >= tenor[i] >= bass[i] for all i
@@ -56,6 +56,10 @@ public:
      * @param isCloseStructure A boolean variable that is set to true if the chord is in close structure
      */
     void close_structure();
+
+    void open_structure();
+
+    void neutral_structure();
 
     /**
      * @brief This method is called when a Branch and Bound solver is used everytime a solution is found by the solver.
@@ -93,6 +97,7 @@ public:
      */
     void print(void) const;
 
-    void testReified(BoolVarArray array, bool value);;
+    void testReified(BoolVarArray array, bool value);
+    ;
 };
 #endif

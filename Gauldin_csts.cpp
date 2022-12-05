@@ -12,18 +12,35 @@ using namespace std;
  ***************************************************************************************************************************************/
 
 /**
- * @brief REMARKs
+ * @brief TODO :
+ * Generalize the constructor so everything depends on n
+ * Take Arguments from command line
+ * Generalize the diff Array (maybe an IntVar Array?) in the structure constraints
+ * Change n so it works with harmonic rhythm
+ */
+
+/**
+ * @brief REMARKS
  * Idk how to print the reified variables when they are assigned, so i created a test function that assigns it to true or false to check if it works
  *
  */
 
 /**
- * @brief Create an instance of the problem (at the moment, doesn't take any arguments but will in the future -> TODO)
+ * @brief Create an instance of the problem
  *
  */
-Gauldin_csts::Gauldin_csts() : n(1), soprano(*this, 1, 1, 4), alto(*this, 1, 1, 4), tenor(*this, 1, 1, 4), bass(*this, 1, 1, 4),
-                               isCloseStructure(*this, 1, 0, 1)
+Gauldin_csts::Gauldin_csts(int size, int lowest_note, int highest_note)
 {
+    // Initialisation
+    n = size;
+
+    soprano = IntVarArray(*this, n, lowest_note, highest_note);
+    alto = IntVarArray(*this, n, lowest_note, highest_note);
+    tenor = IntVarArray(*this, n, lowest_note, highest_note);
+    bass = IntVarArray(*this, n, lowest_note, highest_note);
+
+    isCloseStructure = BoolVarArray(*this, n, false, true);
+
     Rnd r1(12U); // random number generator
 
     // Constraints posting
@@ -41,7 +58,6 @@ Gauldin_csts::Gauldin_csts() : n(1), soprano(*this, 1, 1, 4), alto(*this, 1, 1, 
 /**
  * @brief Posts the constraint that soprano[i] >= alto[i] >= tenor[i] >= bass[i] for all i
  *
- * @param n the length of the IntVarArrays      TODO change to a harmonic rhythm
  */
 void Gauldin_csts::voices_order()
 {
@@ -67,6 +83,11 @@ void Gauldin_csts::close_structure()
     }
 }
 
+void Gauldin_csts::open_structure()
+{
+    IntVarArgs diff(n);
+}
+
 /**
  * @brief This method is called when a Branch and Bound solver is used everytime a solution is found by the solver.
  *
@@ -79,7 +100,7 @@ void Gauldin_csts::constrain(const Space &_b)
 }
 
 /**
- * @brief Print a solution, TODO change so it looks nice
+ * @brief Print a solution
  *
  */
 void Gauldin_csts::print(void) const
@@ -93,7 +114,7 @@ void Gauldin_csts::print(void) const
 
 /**
  * @brief This method assigns a value to the array of boolean variables used for reification to force a given behaviour so we can check if it works or not
- * 
+ *
  * @param array ABoolVarArray of variables used for reification
  * @param value a boolean value that we want to force so we can check the behaviour
  */

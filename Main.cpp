@@ -13,7 +13,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) 
 {
-    Gauldin_csts* m = new Gauldin_csts();   // instantiate model (maybe take parameters from command line)
+    Gauldin_csts* m = new Gauldin_csts(4, 1, 1);   // instantiate model (maybe take parameters from command line)
 
     //Search options
     Gecode::Search::Options opts;
