@@ -25,7 +25,12 @@
  */
 void fillNoteNameToValue();
 
-
+/**
+ * @brief Takes as an argument a note name(e.g.F#3) and returns its MIDI value
+ * 
+ * @param note the name of a note 
+ * @return int the MIDI value of that note
+ */
 int noteToMidi(std::string Note);
 
 
