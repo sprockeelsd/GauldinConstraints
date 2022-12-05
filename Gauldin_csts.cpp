@@ -1,3 +1,13 @@
+/**
+ * @file Gauldin_csts.cpp
+ * @author Sprockeels Damien (damien.sprockeels@uclouvain.be)
+ * @brief This class models tonal music as described by Gauldin in his book "Harmonic practice in tonal music", second edition.
+ * It aims to create four-voice texture chord progressions based on the name of chords. TODO add rhythmic aspect to it
+ * @version 0.1
+ * @date 2022-12-05
+ * 
+ */
+
 #include "Gauldin_csts.h"
 #include "Utilities.h"
 
